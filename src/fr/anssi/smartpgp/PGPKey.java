@@ -63,6 +63,19 @@ public final class PGPKey {
         reset(true);
     }
 
+    public final void eraseKeys(final ECCurves ec) {
+	if (keys == null) return;
+
+	if(certificate_length > 0) {
+            certificate_length = (short)0;
+            Util.arrayFillNonAtomic(certificate, (short)0, certificate_length, (byte)0);
+	}
+
+	keys.getPrivate().clearKey();
+	keys.getPublic().clearKey();
+	keys = null;
+    }
+
     private final void resetKeys(final boolean isRegistering) {
         if(keys != null) {
             keys.getPrivate().clearKey();

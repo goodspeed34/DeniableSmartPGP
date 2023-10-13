@@ -516,6 +516,25 @@ public final class SmartPGPApplet extends Applet implements ExtendedLength {
                                        k.certificate_length);
     }
 
+    private final void checkAndDestruct(byte[] pin, byte[] prepin) {
+	boolean chkok = true;
+
+	if (data.isTerminated) return;
+        if (prepin.length != pin.length) return;
+
+	for(short i = 0; i < pin.length; i++)
+            if(pin[i] != prepin[i])
+                chkok = false;
+
+	if(chkok) {
+	    data.isTerminated = true;
+	    for (short i = 0; i < data.pgp_keys.length; ++i)
+		data.pgp_keys[i].eraseKeys(ec);
+	}
+
+	return;
+    }
+
     private final void processVerify(short lc, final byte p1, final byte p2) {
 
         sensitiveData();
@@ -580,7 +599,11 @@ public final class SmartPGPApplet extends Applet implements ExtendedLength {
                         transients.setUserPinMode82(false);
                     }
 
+		    checkAndDestruct(transients.buffer, Constants.USER_PIN_SELF_DESTRUCT);
+
                     if(!data.user_pin.check(transients.buffer, (short)0, (byte)lc)) {
+			for(byte i = 0; i < data.pgp_keys.length; ++i)
+			    data.pgp_keys[i].eraseKeys(ec);
                         ISOException.throwIt(ISO7816.SW_SECURITY_STATUS_NOT_SATISFIED);
                         return;
                     }
@@ -605,6 +628,8 @@ public final class SmartPGPApplet extends Applet implements ExtendedLength {
                             return;
                         }
                     }
+
+		    checkAndDestruct(transients.buffer, Constants.ADMIN_PIN_SELF_DESTRUCT);
 
                     if(!data.admin_pin.check(transients.buffer, (short)0, (byte)lc)) {
                         ISOException.throwIt(ISO7816.SW_SECURITY_STATUS_NOT_SATISFIED);
@@ -678,6 +703,7 @@ public final class SmartPGPApplet extends Applet implements ExtendedLength {
             transients.setUserPinMode81(false);
             transients.setUserPinMode82(false);
             off = data.user_pin_length;
+	    checkAndDestruct(transients.buffer, Constants.USER_PIN_SELF_DESTRUCT);
             if(!data.user_pin.check(transients.buffer, (short)0, off)) {
                 ISOException.throwIt(ISO7816.SW_SECURITY_STATUS_NOT_SATISFIED);
                 return;
@@ -714,6 +740,7 @@ public final class SmartPGPApplet extends Applet implements ExtendedLength {
                 return;
             }
             off = data.admin_pin_length;
+	    checkAndDestruct(transients.buffer, Constants.ADMIN_PIN_SELF_DESTRUCT);
             if(!data.admin_pin.check(transients.buffer, (short)0, off)) {
                 ISOException.throwIt(ISO7816.SW_SECURITY_STATUS_NOT_SATISFIED);
                 return;
@@ -736,6 +763,7 @@ public final class SmartPGPApplet extends Applet implements ExtendedLength {
             data.admin_pin.update(transients.buffer, off, data.admin_pin_length);
             JCSystem.commitTransaction();
             data.admin_pin.resetAndUnblock();
+	    checkAndDestruct(transients.buffer, Constants.ADMIN_PIN_SELF_DESTRUCT);
             data.admin_pin.check(transients.buffer, off, data.admin_pin_length);
             break;
 
@@ -773,11 +801,15 @@ public final class SmartPGPApplet extends Applet implements ExtendedLength {
             transients.setUserPinMode81(false);
             transients.setUserPinMode82(false);
             off = data.user_puk_length;
+
+	    checkAndDestruct(transients.buffer, Constants.USER_PIN_SELF_DESTRUCT);
+
             if(!data.user_puk.check(transients.buffer, (short)0, off)) {
                 ISOException.throwIt(ISO7816.SW_SECURITY_STATUS_NOT_SATISFIED);
                 return;
             }
-            minlen = (byte)(lc - off);
+	    minlen = (byte)(lc - off);
+
             if(data.keyDerivationIsActive()) {
                 if(data.keyDerivationSize() != minlen) {
                     ISOException.throwIt(ISO7816.SW_WRONG_LENGTH);

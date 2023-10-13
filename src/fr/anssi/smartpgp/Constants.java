@@ -36,9 +36,23 @@ public final class Constants {
     protected static final byte USER_PIN_RETRY_COUNT = 3;
     protected static final byte USER_PIN_MIN_SIZE = 0x06;
     protected static final byte USER_PIN_MAX_SIZE = 0x7f; /* max is 0x7f because PIN format 2 */
+
     protected static final byte[] USER_PIN_DEFAULT = {
         (byte)0x31, (byte)0x32, (byte)0x33, (byte)0x34,
         (byte)0x35, (byte)0x36
+    };
+
+    /*
+     * User's self destruction PIN, to self destruct the PGP key if
+     * facing interrogate or torture from the authority.
+     *
+     * Using this PIN will wipe the card (factory reset).
+     *
+     * This feature can be disabled by setting the following array to null.
+     */
+    protected static final byte[] USER_PIN_SELF_DESTRUCT = {
+	(byte)0x38, (byte)0x38, (byte)0x38, (byte)0x38,
+	(byte)0x38, (byte)0x38, (byte)0x38, (byte)0x38
     };
 
     protected static final boolean USER_PIN_DEFAULT_FORCE_VERIFY_SIGNATURE = true;
@@ -47,12 +61,30 @@ public final class Constants {
     protected static final byte USER_PUK_MIN_SIZE = 0x08;
     protected static final byte USER_PUK_MAX_SIZE = 0x7f; /* max is 0x7f because PIN format 2 */
 
+    /*
+     * User's self destruction ADMIN PIN, to self destruct the PGP key if
+     * facing interrogate or torture from the authority.
+     *
+     * Using this PUK will wipe the card (factory reset).
+     *
+     * This feature can be disabled by setting the following array to null.
+     */
+    protected static final byte[] USER_PUK_SELF_DESTRUCT = {
+	(byte)0x38, (byte)0x38, (byte)0x38, (byte)0x38,
+	(byte)0x38, (byte)0x38, (byte)0x38, (byte)0x38
+    };
+
     protected static final byte ADMIN_PIN_RETRY_COUNT = 3;
     protected static final byte ADMIN_PIN_MIN_SIZE = 0x08;
     protected static final byte ADMIN_PIN_MAX_SIZE = 0x7f; /* max is 0x7f because PIN format 2 */
     protected static final byte[] ADMIN_PIN_DEFAULT = {
         (byte)0x31, (byte)0x32, (byte)0x33, (byte)0x34,
         (byte)0x35, (byte)0x36, (byte)0x37, (byte)0x38
+    };
+
+    protected static final byte[] ADMIN_PIN_SELF_DESTRUCT = {
+	(byte)0x38, (byte)0x38, (byte)0x38, (byte)0x38,
+	(byte)0x38, (byte)0x38, (byte)0x38, (byte)0x38
     };
 
 
